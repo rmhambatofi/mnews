@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Connexion</h1>
+  <form method="post">
+    <label>Mot de passe administrateur
+      <input type="password" name="password" autofocus required>
+    </label>
+    <button type="submit" class="btn">Entrer</button>
+  </form>
+</div>
+{% endblock %}

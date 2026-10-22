@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ nl.subject }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('index') }}">← Toutes les newsletters</a></p>
+<div class="card">
+  <div class="row between">
+    <div>
+      <span class="badge badge-{{ nl.status }}">{{ nl.status }}</span>
+      <span class="muted">{{ nl.date }} · modèle {{ nl.model }} · {{ nl.input_tokens }} / {{ nl.output_tokens }} tokens · ~{{ "%.3f"|format(nl.cost_usd) }} $
+      {% if nl.sent_at %}· envoyée le {{ nl.sent_at|dt }}{% endif %}</span>
+    </div>
+    <form method="post" action="{{ url_for('newsletter_resend', nl_id=nl.id) }}" onsubmit="return confirm('Envoyer cette newsletter par email ?')">
+      <button class="btn">{% if nl.status == 'sent' %}Renvoyer{% else %}Envoyer par email{% endif %}</button>
+    </form>
+  </div>
+  {% if nl.error %}<div class="flash flash-error">{{ nl.error }}</div>{% endif %}
+  <div class="newsletter-body">{{ (nl.body_text|nl2html)|safe }}</div>
+  <details>
+    <summary>Texte brut</summary>
+    <pre class="raw">{{ nl.body_text }}</pre>
+  </details>
+</div>
+
+<div class="card">
+  <h2>Sources utilisées</h2>
+  <table>
+    <thead><tr><th>Sujet</th><th>Article</th><th>Source</th></tr></thead>
+    <tbody>
+    {% for link, item, src in items %}
+      <tr><td>{{ link.story_title }}</td><td><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></td><td>{{ src.name }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

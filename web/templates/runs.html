@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Exécutions{% endblock %}
+{% block content %}
+<h1>Exécutions</h1>
+<div class="card">
+<table>
+  <thead><tr><th>Début</th><th>Fin</th><th>Déclencheur</th><th>Statut</th><th>Newsletter</th><th>Erreur</th></tr></thead>
+  <tbody>
+  {% for r in runs %}
+    <tr>
+      <td><a href="{{ url_for('run_detail', run_id=r.id) }}">{{ r.started_at|dt }}</a></td>
+      <td>{{ r.finished_at|dt }}</td>
+      <td>{{ r.trigger }}</td>
+      <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+      <td>{% if r.newsletter_id %}<a href="{{ url_for('newsletter', nl_id=r.newsletter_id) }}">#{{ r.newsletter_id }}</a>{% endif %}</td>
+      <td class="url">{{ (r.error or '')[:120] }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

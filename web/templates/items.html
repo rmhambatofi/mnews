@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Articles collectés{% endblock %}
+{% block content %}
+<h1>Derniers articles collectés</h1>
+<div class="card">
+<table>
+  <thead><tr><th>Collecté</th><th>Publié</th><th>Source</th><th>Titre</th><th>Score</th></tr></thead>
+  <tbody>
+  {% for item, src in rows %}
+    <tr>
+      <td>{{ item.fetched_at|dt }}</td>
+      <td>{{ item.published_at|dt }}</td>
+      <td>{{ src.name }}</td>
+      <td><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></td>
+      <td>{{ item.score or '' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{% if src %}Modifier{% else %}Nouvelle{% endif %} source{% endblock %}
+{% block content %}
+{% set f = form or {} %}
+<p><a href="{{ url_for('sources') }}">← Sources</a></p>
+<div class="card narrow">
+  <h1>{% if src %}Modifier la source{% else %}Nouvelle source{% endif %}</h1>
+  <form method="post">
+    <label>Nom
+      <input name="name" required value="{{ f.get('name', src.name if src else '') }}">
+    </label>
+    <label>Type
+      <select name="type">
+        {% for key, label in types.items() %}
+          <option value="{{ key }}" {% if (f.get('type') or (src.type if src else 'rss')) == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>URL du flux (ou pseudo X sans @, ou URL de listing Reddit en .rss)
+      <input name="url" value="{{ f.get('url', src.url if src else '') }}" placeholder="https://exemple.com/feed.xml">
+    </label>
+    <label>Langue
+      <select name="lang">
+        {% for l in ['en', 'fr'] %}<option value="{{ l }}" {% if (f.get('lang') or (src.lang if src else 'en')) == l %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Options (JSON)
+      <input name="config_json" value='{{ f.get('config_json', src.config_json if src else '{}') }}'>
+      <small class="muted">Exemples : X → {"handle": "AnthropicAI"} · Hacker News → {"min_points": 40} · GitHub recherche → {"days": 7, "min_stars": 150, "topics": ["llm", "agents"]} · Page sans RSS → {"pattern": "^/news/[^/]+$"}</small>
+    </label>
+    <label class="check"><input type="checkbox" name="enabled" {% if f.get('enabled', 'on' if (src is none or src.enabled) else '') == 'on' %}checked{% endif %}> Active</label>
+    <button class="btn btn-primary" type="submit">Enregistrer</button>
+  </form>
+</div>
+{% endblock %}

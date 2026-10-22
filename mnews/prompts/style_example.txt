@@ -1,0 +1,46 @@
+🗞️ News IA du 22 octobre : Claude sort Duet pour concurrencer Grok Bot, Dots et Muse
+🤖 Et si Claude venait vers vous au lieu d'attendre que vous ouvriez une conversation ?
+Anthropic ouvre Claude Duet, une nouvelle app où Claude travaille comme un agent qui prend les devants, construite autour d'Opus 5.5.
+Chaque matin, il vous envoie un court résumé de ce qui compte dans vos apps connectées, puis il ne vous écrit que quand quelque chose a besoin de vous.
+Il regarde vos comptes toutes les quelques heures, pas en continu, justement pour ne pas vider vos limites.
+Vous lui confiez une tâche en un message, écrit ou à la voix, et il choisit seul les apps et les étapes, puis il vous prévient quand c'est fini.
+Il tourne sur son propre ordinateur dans le cloud, avec son propre navigateur, donc il continue même quand le vôtre est éteint.
+Et il reprend la mémoire, les skills et les connecteurs que vous avez déjà dans votre compte Claude, donc il n'y a presque rien à configurer.
+Concrètement, il peut retrouver les e-mails auxquels vous n'avez pas répondu, repérer les factures impayées dans Stripe et préparer les relances, ou vous monter un tableau de bord.
+Avant d'envoyer un message, de payer, de signer ou de supprimer quoi que ce soit, il vous montre ce qu'il va faire et attend votre accord.
+Il ne voit jamais vos mots de passe, et certaines choses lui restent interdites même avec votre accord, comme les virements.
+Il faut être clair sur un point : pour l'instant, c'est une liste d'attente réservée aux abonnés Pro et Max aux États-Unis, sur iPhone, Android et claude.ai.
+Ses vérifications en fond comptent dans les limites de votre abonnement, et Anthropic prévient qu'il peut encore se tromper sur ce qui est urgent.
+https://claude.com/resources/articles/claude-duet
+https://claude.com/product/claude-duet
+🚨 Vous avez un site WordPress, ou un site en PHP chez un hébergeur ?
+Deux failles critiques viennent d'être corrigées dans PHP lui-même, le langage qui fait tourner environ 70 % des sites.
+Elles ont été trouvées par des chercheurs avec l'aide des modèles d'OpenAI, et aussi par l'entreprise de sécurité Wiz de son côté.
+Sur une version touchée, quelqu'un sans compte peut exécuter du code sur votre serveur, ou y lire vos mots de passe et vos clés API.
+Il faut être clair sur un point : mettre à jour WordPress ou vos extensions ne suffit pas, c'est la version de PHP qu'il faut changer.
+Les premières versions corrigées sont 8.2.35, 8.3.36, 8.4.27 et 8.5.12.
+Regardez la version de PHP dans le panneau de votre hébergeur, et si elle est en dessous, mettez-la à jour ou demandez-le à votre hébergeur.
+Si vous avez Codex, OpenAI a publié un skill qui vérifie la version à partir de l'adresse de votre site.
+Attention, s'il répond « UNKNOWN », ça ne veut pas dire que vous êtes protégé, seulement qu'il n'a pas pu lire la version.
+https://www.php2shell.com/
+https://github.com/openai/php2shell-checker
+🛡️ Vous installez des skills trouvés sur X ou sur GitHub ?
+NVIDIA publie en open source SkillSpector, le scanner qu'il utilise avant de publier ses propres skills.
+Dans l'étude qu'il cite, sur plus de 31 000 skills analysés, environ un sur quatre avait une faille et un sur vingt avait l'air malveillant.
+Vous lui donnez le dossier du skill ou le lien de son dépôt GitHub, et il vous rend une note de risque de 0 à 100 avec une recommandation.
+Il marche pour les skills de Claude Code, de Codex et de Gemini CLI.
+Le plus simple, c'est de coller le lien du dépôt dans Claude Code, de lui demander de l'installer, puis de scanner chaque skill avant de l'ajouter.
+https://github.com/NVIDIA/skillspector
+⭐ Quels dépôts GitHub ont pris le plus d'étoiles cette semaine ?
+🎙️ VoiceStudio, une alternative gratuite à ElevenLabs qui tourne sur votre ordinateur, pour cloner votre voix, doubler une vidéo, dicter ou transcrire.
+On ne clone la voix de quelqu'un qu'avec sa permission.
+https://github.com/debpalash/VoiceStudio
+🧩 L'annuaire officiel des plugins Claude Code tenu par Anthropic, que vous parcourez aussi avec /plugin directement dans Claude Code.
+https://github.com/anthropics/claude-plugins-official
+📊 PPT Master, un skill qui transforme un PDF ou un document en vrai PowerPoint modifiable, avec de vrais graphiques et des animations.
+https://github.com/hugohe3/ppt-master
+🧠 Context Mode, un plugin qui garde les grosses sorties d'outils hors de votre conversation, pour que Claude Code tienne plus longtemps et retrouve le fil après un compactage.
+https://github.com/mksglu/context-mode
+🔁 AI Memory, une mémoire commune entre Claude Code et Codex : vous quittez Claude Code en plein milieu d'une tâche, vous ouvrez Codex dans le même dossier, et il reprend où vous en étiez.
+Sur Windows, il est encore en test, donc il marche mieux sur Mac ou Linux pour l'instant.
+https://github.com/akitaonrails/ai-memory

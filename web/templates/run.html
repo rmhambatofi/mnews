@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Exécution #{{ run.id }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('runs') }}">← Exécutions</a></p>
+<div class="card">
+  <h1>Exécution #{{ run.id }} <span class="badge badge-{{ run.status }}">{{ run.status }}</span></h1>
+  <p class="muted">{{ run.started_at|dt }} → {{ run.finished_at|dt }} · déclencheur : {{ run.trigger }}
+  {% if run.newsletter_id %}· <a href="{{ url_for('newsletter', nl_id=run.newsletter_id) }}">newsletter #{{ run.newsletter_id }}</a>{% endif %}</p>
+  {% if run.error %}<h2>Erreur</h2><pre class="raw">{{ run.error }}</pre>{% endif %}
+  <h2>Journal</h2>
+  <pre class="raw">{{ run.log or '(vide)' }}</pre>
+</div>
+{% endblock %}

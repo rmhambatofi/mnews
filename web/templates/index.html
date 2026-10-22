@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Newsletters{% endblock %}
+{% block content %}
+<div class="row stats">
+  <div class="stat"><span class="label">Coût estimé ce mois</span><span class="value">{{ "%.2f"|format(month_cost) }} $</span></div>
+  <div class="stat"><span class="label">Dernière exécution</span>
+    <span class="value">{% if last_run %}<a href="{{ url_for('run_detail', run_id=last_run.id) }}">{{ last_run.started_at|dt }}</a> · <span class="badge badge-{{ last_run.status }}">{{ last_run.status }}</span>{% else %}—{% endif %}</span></div>
+  <div class="stat"><span class="label">Sources en erreur</span><span class="value {% if sources_err %}warn{% endif %}">{{ sources_err }}</span></div>
+</div>
+
+<div class="card">
+  <h2>Générer maintenant</h2>
+  {% if running %}
+    <p class="muted">⏳ Une génération est en cours. Rechargez la page dans une minute.</p>
+  {% else %}
+  <form method="post" action="{{ url_for('generate') }}" class="inline">
+    <button class="btn" name="mode" value="preview">Aperçu sans envoi</button>
+    <button class="btn btn-primary" name="mode" value="send" onclick="return confirm('Générer et envoyer la newsletter par email maintenant ?')">Générer et envoyer</button>
+  </form>
+  <p class="muted">L'aperçu collecte les sources, fait rédiger Claude et enregistre le résultat ici, sans envoyer d'email.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Newsletters</h2>
+  {% if not newsletters %}<p class="muted">Aucune newsletter pour le moment.</p>{% endif %}
+  <table>
+    <thead><tr><th>Date</th><th>Objet</th><th>Statut</th><th>Candidats</th><th>Coût</th><th>Créée</th></tr></thead>
+    <tbody>
+    {% for nl in newsletters %}
+      <tr>
+        <td>{{ nl.date }}</td>
+        <td><a href="{{ url_for('newsletter', nl_id=nl.id) }}">{{ nl.subject or '(sans objet)' }}</a></td>
+        <td><span class="badge badge-{{ nl.status }}">{{ nl.status }}</span></td>
+        <td>{{ nl.candidates_count }}</td>
+        <td>{{ "%.3f"|format(nl.cost_usd) }} $</td>
+        <td>{{ nl.created_at|dt }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

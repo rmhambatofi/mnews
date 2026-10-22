@@ -1,0 +1,10 @@
+# Tâche cron à ajouter dans cPanel > Tâches cron (o2switch)
+# Les serveurs o2switch sont à l'heure de Paris. Envoi tous les jours à 9h00.
+# Remplacez USER par votre identifiant cPanel et vérifiez le chemin du venv
+# (il est affiché dans cPanel > Setup Python App, bouton « Enter to the virtual environment »).
+#
+# Minute Heure Jour Mois JourSemaine Commande
+0 9 * * * cd /home/USER/mnews && /home/USER/virtualenv/mnews/3.11/bin/python -m mnews run --trigger cron >> /home/USER/mnews/logs/cron.log 2>&1
+#
+# Variante sans cPanel Python App (venv créé à la main) :
+# 0 9 * * * cd /home/USER/mnews && /home/USER/mnews/venv/bin/python -m mnews run --trigger cron >> /home/USER/mnews/logs/cron.log 2>&1

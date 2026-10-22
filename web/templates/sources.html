@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+{% block content %}
+<div class="row between">
+  <h1>Sources</h1>
+  <a class="btn btn-primary" href="{{ url_for('source_form') }}">+ Ajouter une source</a>
+</div>
+<div class="card">
+<table>
+  <thead><tr><th>Actif</th><th>Nom</th><th>Type</th><th>URL / pseudo</th><th>Langue</th><th>Dernière collecte</th><th>Statut</th><th></th></tr></thead>
+  <tbody>
+  {% for s in sources %}
+    <tr class="{% if not s.enabled %}disabled{% endif %}">
+      <td>
+        <form method="post" action="{{ url_for('source_toggle', src_id=s.id) }}" class="inline">
+          <button class="toggle" title="Activer / désactiver">{% if s.enabled %}✅{% else %}⬜{% endif %}</button>
+        </form>
+      </td>
+      <td><a href="{{ url_for('source_form', src_id=s.id) }}">{{ s.name }}</a></td>
+      <td>{{ types.get(s.type, s.type) }}</td>
+      <td class="url">{{ s.url }}</td>
+      <td>{{ s.lang }}</td>
+      <td>{{ s.last_fetched_at|dt }}{% if s.last_item_count %} · {{ s.last_item_count }} él.{% endif %}</td>
+      <td>
+        {% if s.last_status == 'error' %}<span class="badge badge-failed" title="{{ s.last_error }}">erreur</span>
+        {% elif s.last_status == 'ok' %}<span class="badge badge-success">ok</span>
+        {% else %}<span class="badge">jamais</span>{% endif %}
+      </td>
+      <td class="actions">
+        <form method="post" action="{{ url_for('source_test', src_id=s.id) }}" class="inline"><button class="btn btn-small">Tester</button></form>
+        <form method="post" action="{{ url_for('source_delete', src_id=s.id) }}" class="inline" onsubmit="return confirm('Supprimer cette source ?')"><button class="btn btn-small btn-danger">Supprimer</button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
