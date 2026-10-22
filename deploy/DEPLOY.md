@@ -111,6 +111,7 @@ puis **Restart** dans Setup Python App.
 ## Dépannage
 
 - `Variables manquantes dans .env` : une variable obligatoire est vide.
+- `Plafond mensuel atteint` : la dépense Claude du mois a atteint `MONTHLY_BUDGET_EUR`. Plus aucune génération jusqu'au 1er du mois suivant, sauf si vous relevez le plafond dans `.env` (puis Restart).
 - Erreur SMTP `535` : mauvais mot de passe de la boîte `no-reply@`.
 - Les comptes X renvoient des erreurs : la passerelle Nitter est hors ligne. Changer `X_RSS_TEMPLATE` dans `.env` pour une autre instance (par exemple `https://nitter.privacydev.net/{handle}/rss`) ou désactiver ces sources dans l'interface.
 - Journaux : `logs/mnews.log`, `logs/cron.log`, et la page **Exécutions** de l'interface.

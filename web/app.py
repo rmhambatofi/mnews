@@ -13,7 +13,8 @@ from sqlalchemy import desc, func, select
 
 from mnews.collectors import SOURCE_TYPES
 from mnews.config import ROOT_DIR, settings
-from mnews.db import Item, Newsletter, NewsletterItem, Run, Source, init_db, session_scope
+from mnews.costs import month_spend_usd, usd_to_eur
+from mnews.db import Item, LlmCall, Newsletter, NewsletterItem, Run, Source, init_db, session_scope
 from mnews.logsetup import setup_logging
 from mnews.mailer import text_to_html
 from mnews.pipeline.run import LOCK_FILE
@@ -83,16 +84,17 @@ def index():
     with session_scope() as s:
         newsletters = s.scalars(select(Newsletter).order_by(desc(Newsletter.created_at)).limit(60)).all()
         last_run = s.scalars(select(Run).order_by(desc(Run.started_at)).limit(1)).first()
-        month_cost = s.scalar(
-            select(func.coalesce(func.sum(Newsletter.cost_usd), 0.0))
-            .where(Newsletter.date >= datetime.now(settings.tz).strftime("%Y-%m-01"))
-        )
         sources_err = s.scalar(select(func.count(Source.id)).where(Source.enabled.is_(True), Source.last_status == "error"))
+    # Tous les appels Claude du mois, y compris ceux des générations en échec
+    month_cost_eur = usd_to_eur(month_spend_usd())
+    budget_eur = settings.monthly_budget_eur
     return render_template(
         "index.html",
         newsletters=newsletters,
         last_run=last_run,
-        month_cost=month_cost or 0.0,
+        month_cost_eur=month_cost_eur,
+        budget_eur=budget_eur,
+        over_budget=budget_eur > 0 and month_cost_eur >= budget_eur,
         sources_err=sources_err or 0,
         running=LOCK_FILE.exists(),
     )
@@ -302,7 +304,8 @@ def run_detail(run_id: int):
         run = s.get(Run, run_id)
         if not run:
             abort(404)
-    return render_template("run.html", run=run)
+        calls = s.scalars(select(LlmCall).where(LlmCall.run_id == run_id).order_by(LlmCall.id)).all()
+    return render_template("run.html", run=run, calls=calls, usd_eur_rate=settings.usd_eur_rate)
 
 
 @app.route("/items")

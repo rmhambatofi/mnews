@@ -187,7 +187,7 @@ def select_stories(candidates: list[Candidate], today_label: str,
         + (_format_candidates(repos, max_chars=300) or "(aucun)")
     )
 
-    result = call_json(system, user, SELECTION_SCHEMA, effort=settings.effort_select, max_tokens=8000)
+    result = call_json(system, user, SELECTION_SCHEMA, step="select", effort=settings.effort_select, max_tokens=8000)
     by_id = {c.id: c for c in candidates}
 
     stories: list[Story] = []

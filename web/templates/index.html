@@ -2,7 +2,8 @@
 {% block title %}Newsletters{% endblock %}
 {% block content %}
 <div class="row stats">
-  <div class="stat"><span class="label">Coût estimé ce mois</span><span class="value">{{ "%.2f"|format(month_cost) }} $</span></div>
+  <div class="stat"><span class="label">Coût Claude ce mois{% if budget_eur > 0 %} / plafond{% endif %}</span>
+    <span class="value {% if over_budget %}warn{% endif %}">{{ "%.2f"|format(month_cost_eur) }} €{% if budget_eur > 0 %} / {{ "%.0f"|format(budget_eur) }} €{% endif %}</span></div>
   <div class="stat"><span class="label">Dernière exécution</span>
     <span class="value">{% if last_run %}<a href="{{ url_for('run_detail', run_id=last_run.id) }}">{{ last_run.started_at|dt }}</a> · <span class="badge badge-{{ last_run.status }}">{{ last_run.status }}</span>{% else %}—{% endif %}</span></div>
   <div class="stat"><span class="label">Sources en erreur</span><span class="value {% if sources_err %}warn{% endif %}">{{ sources_err }}</span></div>
@@ -10,7 +11,9 @@
 
 <div class="card">
   <h2>Générer maintenant</h2>
-  {% if running %}
+  {% if over_budget %}
+    <p class="warn">Plafond mensuel atteint : plus aucune génération ce mois-ci, cron compris. Relevez <code>MONTHLY_BUDGET_EUR</code> dans <code>.env</code> pour débloquer.</p>
+  {% elif running %}
     <p class="muted">⏳ Une génération est en cours. Rechargez la page dans une minute.</p>
   {% else %}
   <form method="post" action="{{ url_for('generate') }}" class="inline">

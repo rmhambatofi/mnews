@@ -23,6 +23,13 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(_env(name, str(default)).replace(",", "."))
+    except ValueError:
+        return default
+
+
 def _env_bool(name: str, default: bool = False) -> bool:
     val = _env(name, "1" if default else "0").lower()
     return val in ("1", "true", "yes", "on")
@@ -39,6 +46,10 @@ class Settings:
     claude_model: str = field(default_factory=lambda: _env("CLAUDE_MODEL", "claude-opus-5-5"))
     effort_select: str = field(default_factory=lambda: _env("CLAUDE_EFFORT_SELECT", "medium"))
     effort_write: str = field(default_factory=lambda: _env("CLAUDE_EFFORT_WRITE", "high"))
+    # Plafond de dépense Claude par mois calendaire (0 = pas de plafond)
+    monthly_budget_eur: float = field(default_factory=lambda: _env_float("MONTHLY_BUDGET_EUR", 10.0))
+    # Taux de conversion pour comparer le coût (facturé en $) au plafond en €
+    usd_eur_rate: float = field(default_factory=lambda: _env_float("USD_EUR_RATE", 0.95))
 
     smtp_host: str = field(default_factory=lambda: _env("SMTP_HOST"))
     smtp_port: int = field(default_factory=lambda: _env_int("SMTP_PORT", 465))

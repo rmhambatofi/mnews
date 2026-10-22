@@ -121,7 +121,7 @@ def write_newsletter(selection: Selection, day) -> Draft:
         parts.append("")
         parts.append(f"Note du sélectionneur : {selection.editor_note}")
 
-    result = call_json(system, "\n".join(parts), WRITER_SCHEMA, effort=settings.effort_write, max_tokens=16000)
+    result = call_json(system, "\n".join(parts), WRITER_SCHEMA, step="write", effort=settings.effort_write, max_tokens=16000)
     body = result.data.get("body", "").strip()
     subject = result.data.get("subject", "").strip() or body.splitlines()[0] if body else ""
     titles = [t.strip() for t in result.data.get("story_titles", []) if t.strip()]

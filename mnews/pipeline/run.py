@@ -12,6 +12,7 @@ from sqlalchemy import select
 
 from mnews.calendar_rules import should_send_today
 from mnews.config import ROOT_DIR, settings
+from mnews.costs import check_budget, end_run, start_run
 from mnews.db import Newsletter, NewsletterItem, Run, session_scope, utcnow
 from mnews.logsetup import setup_logging
 from mnews.mailer import send_alert, send_email
@@ -74,6 +75,7 @@ def run_pipeline(trigger: str = "cli", force: bool = False, send: bool = True,
         session.add(run)
         session.flush()
         run_id = run.id
+    run_token = start_run(run_id)
 
     newsletter_id: int | None = None
     status = "failed"
@@ -90,6 +92,8 @@ def run_pipeline(trigger: str = "cli", force: bool = False, send: bool = True,
                 log.info("Newsletter du %s déjà envoyée, rien à faire", date_str)
                 status = "skipped"
                 return None
+
+            check_budget()
 
             if not skip_collect:
                 reports = collect_all()
@@ -172,6 +176,7 @@ def run_pipeline(trigger: str = "cli", force: bool = False, send: bool = True,
             )
         return None
     finally:
+        end_run(run_token)
         logging.getLogger("mnews").removeHandler(handler)
         with session_scope() as session:
             run = session.get(Run, run_id)

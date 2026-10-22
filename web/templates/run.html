@@ -7,6 +7,25 @@
   <p class="muted">{{ run.started_at|dt }} → {{ run.finished_at|dt }} · déclencheur : {{ run.trigger }}
   {% if run.newsletter_id %}· <a href="{{ url_for('newsletter', nl_id=run.newsletter_id) }}">newsletter #{{ run.newsletter_id }}</a>{% endif %}</p>
   {% if run.error %}<h2>Erreur</h2><pre class="raw">{{ run.error }}</pre>{% endif %}
+  <h2>Appels Claude</h2>
+  {% if not calls %}<p class="muted">Aucun appel.</p>{% else %}
+  <table>
+    <thead><tr><th>Étape</th><th>Modèle</th><th>Statut</th><th>Entrée</th><th>Cache écrit / lu</th><th>Sortie</th><th>Coût</th></tr></thead>
+    <tbody>
+    {% for c in calls %}
+      <tr>
+        <td>{{ c.step }}</td>
+        <td>{{ c.model }}</td>
+        <td><span class="badge badge-{{ c.status }}">{{ c.status }}</span>{% if c.error %}<br><span class="muted">{{ c.error[:200] }}</span>{% endif %}</td>
+        <td>{{ c.input_tokens }}</td>
+        <td>{{ c.cache_write_tokens }} / {{ c.cache_read_tokens }}</td>
+        <td>{{ c.output_tokens }}</td>
+        <td>{{ "%.3f"|format(c.cost_usd * usd_eur_rate) }} €</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
   <h2>Journal</h2>
   <pre class="raw">{{ run.log or '(vide)' }}</pre>
 </div>

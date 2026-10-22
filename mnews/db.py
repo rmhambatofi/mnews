@@ -156,6 +156,28 @@ class Run(Base):
     error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
 
+class LlmCall(Base):
+    """Un appel à l'API Claude, réussi ou non : sert au suivi des coûts et au plafond mensuel."""
+
+    __tablename__ = "llm_calls"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
+    run_id: Mapped[Optional[int]] = mapped_column(ForeignKey("runs.id"), nullable=True, index=True)
+    # select | write
+    step: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    model: Mapped[str] = mapped_column(String(60), nullable=False, default="")
+    # ok | error
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="ok")
+    input_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cache_write_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cache_read_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    request_id: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
 # ---------------------------------------------------------------------------
 # Engine / sessions
 # ---------------------------------------------------------------------------

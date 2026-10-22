@@ -22,6 +22,7 @@ h2 { font-size: 17px; margin: 0 0 12px; }
 .stat .label { color: var(--muted); font-size: 13px; }
 .stat .value { font-size: 18px; font-weight: 600; }
 .stat .value.warn { color: var(--err); }
+p.warn { color: var(--err); font-weight: 600; }
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { color: var(--muted); font-weight: 600; font-size: 13px; }
