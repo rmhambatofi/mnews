@@ -49,21 +49,22 @@ def cmd_check_sources(args) -> int:
 
     from sqlalchemy import select
 
-    from mnews.collectors import collect_source
+    from mnews.collectors import collect_source, reddit_batch
     from mnews.db import Source, session_scope, utcnow
 
     since = utcnow() - timedelta(hours=args.hours)
     with session_scope() as session:
         sources = session.scalars(select(Source).order_by(Source.id)).all()
-    for src in sources:
-        try:
-            items = collect_source(src, since)
-            print(f"OK     [{src.id:3d}] {src.name}: {len(items)} éléments")
-            if args.verbose:
-                for it in items[:3]:
-                    print(f"         - {it.title[:90]}")
-        except Exception as exc:  # noqa: BLE001
-            print(f"ERREUR [{src.id:3d}] {src.name}: {type(exc).__name__}: {exc}")
+    with reddit_batch([src.url for src in sources if src.type == "reddit"], since):
+        for src in sources:
+            try:
+                items = collect_source(src, since)
+                print(f"OK     [{src.id:3d}] {src.name}: {len(items)} éléments")
+                if args.verbose:
+                    for it in items[:3]:
+                        print(f"         - {it.title[:90]}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"ERREUR [{src.id:3d}] {src.name}: {type(exc).__name__}: {exc}")
     return 0
 
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 import traceback
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -11,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from mnews.collectors import collect_source
+from mnews.collectors import collect_source, reddit_batch
 from mnews.config import settings
 from mnews.db import Item, Source, session_scope, utcnow
 from mnews.textutil import normalize_url, truncate, url_hash
@@ -40,23 +39,23 @@ def collect_all(lookback_hours: int | None = None, only_source_id: int | None = 
             query = select(Source).where(Source.id == only_source_id)
         sources = session.scalars(query).all()
 
-    for src in sources:
-        report = SourceReport(source_id=src.id, name=src.name, status="ok")
-        if src.type == "reddit":
-            time.sleep(4)  # Reddit limite fortement les requêtes rapprochées
-        try:
-            raw_items = collect_source(src, since)
-            report.fetched = len(raw_items)
-            report.new = _store_items(src, raw_items, since)
-            _update_source(src.id, "ok", None, report.fetched)
-            log.info("%s : %d récupérés, %d nouveaux", src.name, report.fetched, report.new)
-        except Exception as exc:  # noqa: BLE001 - une source en panne ne bloque pas les autres
-            report.status = "error"
-            report.error = f"{type(exc).__name__}: {exc}"
-            _update_source(src.id, "error", report.error, 0)
-            log.warning("%s : échec (%s)", src.name, report.error)
-            log.debug(traceback.format_exc())
-        reports.append(report)
+    reddit_urls = [src.url for src in sources if src.type == "reddit"]
+    with reddit_batch(reddit_urls, since):
+        for src in sources:
+            report = SourceReport(source_id=src.id, name=src.name, status="ok")
+            try:
+                raw_items = collect_source(src, since)
+                report.fetched = len(raw_items)
+                report.new = _store_items(src, raw_items, since)
+                _update_source(src.id, "ok", None, report.fetched)
+                log.info("%s : %d récupérés, %d nouveaux", src.name, report.fetched, report.new)
+            except Exception as exc:  # noqa: BLE001 - une source en panne ne bloque pas les autres
+                report.status = "error"
+                report.error = f"{type(exc).__name__}: {exc}"
+                _update_source(src.id, "error", report.error, 0)
+                log.warning("%s : échec (%s)", src.name, report.error)
+                log.debug(traceback.format_exc())
+            reports.append(report)
     return reports
 
 

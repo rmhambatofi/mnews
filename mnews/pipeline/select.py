@@ -30,7 +30,7 @@ SELECTION_SCHEMA = {
                     "working_title": {"type": "string"},
                     "item_ids": {"type": "array", "items": {"type": "integer"}},
                     "fetch_item_ids": {"type": "array", "items": {"type": "integer"}},
-                    "importance": {"type": "integer", "minimum": 1, "maximum": 5},
+                    "importance": {"type": "integer", "description": "De 1 (anecdotique) à 5 (majeur)"},
                     "category": {
                         "type": "string",
                         "enum": ["produit", "modele", "securite", "outil_dev", "recherche", "business", "reglementation", "autre"],
@@ -199,7 +199,7 @@ def select_stories(candidates: list[Candidate], today_label: str,
             Story(
                 working_title=s.get("working_title", "").strip() or items[0].title,
                 items=items,
-                importance=int(s.get("importance", 3)),
+                importance=min(5, max(1, int(s.get("importance", 3)))),
                 category=s.get("category", "autre"),
                 why=s.get("why", ""),
                 fetch_item_ids=[i for i in s.get("fetch_item_ids", []) if i in by_id][:2],

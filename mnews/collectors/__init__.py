@@ -7,7 +7,7 @@ from mnews.collectors.base import CollectError, RawItem
 from mnews.collectors.github_trending import collect_search, collect_trending
 from mnews.collectors.hackernews import collect_hackernews
 from mnews.collectors.html_links import collect_html_links
-from mnews.collectors.rss import collect_reddit, collect_rss, collect_x
+from mnews.collectors.rss import collect_reddit, collect_rss, collect_x, reddit_batch
 from mnews.config import settings
 from mnews.db import Source
 
