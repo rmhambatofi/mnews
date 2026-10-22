@@ -108,6 +108,8 @@ def strip_html(fragment: str, max_len: int = 600) -> str:
 
 def fetch_article_text(url: str, max_chars: int = 7000, timeout: int = 15) -> Optional[str]:
     """Télécharge une page et renvoie son texte principal (tronqué)."""
+    if "news.google.com/" in url:
+        return None  # lien de redirection Google News : pas d'article à extraire
     try:
         resp = requests.get(
             url,

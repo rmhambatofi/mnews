@@ -29,7 +29,7 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
     ("TechCrunch - AI", "rss", "https://techcrunch.com/category/artificial-intelligence/feed/", "en", {}, True),
     ("Ars Technica - AI", "rss", "https://arstechnica.com/ai/feed/", "en", {}, True),
     ("MIT Technology Review - AI", "rss", "https://www.technologyreview.com/topic/artificial-intelligence/feed", "en", {}, True),
-    ("VentureBeat - AI", "rss", "https://venturebeat.com/category/ai/feed/", "en", {}, True),
+    ("VentureBeat - AI", "rss", "https://news.google.com/rss/search?q=site:venturebeat.com&hl=en-US&gl=US&ceid=US:en", "en", {}, True),
     ("The Information", "rss", "https://www.theinformation.com/feed", "en", {}, True),
     ("The Decoder", "rss", "https://the-decoder.com/feed/", "en", {}, True),
     ("Simon Willison", "rss", "https://simonwillison.net/atom/everything/", "en", {}, True),
@@ -40,7 +40,7 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
     ("Numerama - Tech", "rss", "https://www.numerama.com/tech/feed/", "fr", {}, True),
     ("Le Monde Informatique - IA", "rss", "https://www.lemondeinformatique.fr/flux-rss/thematique/intelligence-artificielle/rss.xml", "fr", {}, True),
     ("Frandroid", "rss", "https://www.frandroid.com/feed", "fr", {}, True),
-    ("01net", "rss", "https://www.01net.com/feed/", "fr", {}, True),
+    ("01net", "rss", "https://news.google.com/rss/search?q=site:01net.com&hl=fr&gl=FR&ceid=FR:fr", "fr", {}, True),
     ("Siècle Digital", "rss", "https://siecledigital.fr/feed/", "fr", {}, True),
     ("Blog du Modérateur", "rss", "https://www.blogdumoderateur.com/feed/", "fr", {}, True),
     ("L'Usine Digitale", "rss", "https://www.usine-digitale.fr/rss", "fr", {}, True),
@@ -70,11 +70,29 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
 ]
 
 
+# Anciennes URL remplacées : seed_sources() met à jour les sources déjà en base.
+# VentureBeat (anti-robots Vercel) et 01net (Cloudflare bloque l'IP de l'hébergeur)
+# passent par le flux Google News du site.
+REPLACED_URLS = {
+    "https://venturebeat.com/category/ai/feed/": "https://news.google.com/rss/search?q=site:venturebeat.com&hl=en-US&gl=US&ceid=US:en",
+    "https://www.01net.com/feed/": "https://news.google.com/rss/search?q=site:01net.com&hl=fr&gl=FR&ceid=FR:fr",
+}
+
+
 def seed_sources() -> int:
-    """Insère les sources manquantes (idempotent). Renvoie le nombre ajouté."""
+    """Insère les sources manquantes et met à jour les URL remplacées (idempotent).
+
+    Renvoie le nombre de sources ajoutées.
+    """
     added = 0
     with session_scope() as session:
-        existing = {s.url for s in session.scalars(select(Source)).all()}
+        sources = session.scalars(select(Source)).all()
+        for src in sources:
+            if src.url in REPLACED_URLS:
+                src.url = REPLACED_URLS[src.url]
+                src.last_status = "never"
+                src.last_error = None
+        existing = {s.url for s in sources}
         for name, type_, url, lang, cfg, enabled in SEED:
             if url in existing:
                 continue

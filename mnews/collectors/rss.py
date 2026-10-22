@@ -21,6 +21,7 @@ def collect_rss(url: str, lang: str = "en", since: datetime | None = None,
     if feed.bozo and not feed.entries:
         raise CollectError(f"Flux illisible : {getattr(feed, 'bozo_exception', 'erreur inconnue')}")
 
+    is_google_news = "news.google.com/" in url
     items: list[RawItem] = []
     for entry in feed.entries[:max_items]:
         link = entry.get("link") or ""
@@ -35,6 +36,14 @@ def collect_rss(url: str, lang: str = "en", since: datetime | None = None,
         summary = entry.get("summary") or ""
         if not summary and entry.get("content"):
             summary = entry["content"][0].get("value", "")
+        extra = {"author": entry.get("author", "")}
+        if is_google_news:
+            # Titre « Sujet - Média » et résumé qui ne fait que répéter le titre
+            publisher = (entry.get("source") or {}).get("title", "")
+            if publisher and title.endswith(f" - {publisher}"):
+                title = title[: -len(publisher) - 3].strip()
+            summary = ""
+            extra["publisher"] = publisher
         items.append(
             RawItem(
                 url=link,
@@ -42,7 +51,7 @@ def collect_rss(url: str, lang: str = "en", since: datetime | None = None,
                 summary=strip_html(summary),
                 published_at=published,
                 lang=lang,
-                extra={"author": entry.get("author", "")},
+                extra=extra,
             )
         )
     return items
