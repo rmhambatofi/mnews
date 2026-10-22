@@ -48,6 +48,15 @@ git clone <url-du-depot> ~/mnews
 pip install -r requirements.txt
 ```
 
+4. **Restaurer `passenger_wsgi.py`.** Au « Create », cPanel écrase ce fichier par son propre modèle, qui se charge lui-même en boucle (`RecursionError` au démarrage, et l'interface web ne répond pas). Il faut remettre la version du dépôt :
+
+```bash
+git checkout -- passenger_wsgi.py
+python -c "import passenger_wsgi; print('OK', passenger_wsgi.application)"   # doit afficher OK <Flask 'web.app'>
+```
+
+> cPanel peut le réécrire à chaque modification de l'application dans Setup Python App (version de Python, URL...). Si `git status` affiche `modified: passenger_wsgi.py`, relancer la commande `git checkout` ci-dessus puis **Restart**.
+
 ## 5. Configuration
 
 ```bash
@@ -111,6 +120,7 @@ puis **Restart** dans Setup Python App.
 ## Dépannage
 
 - `Variables manquantes dans .env` : une variable obligatoire est vide.
+- Interface web inaccessible, journal Passenger « The application process exited prematurely » : voir l'étape 4.4 (`passenger_wsgi.py` écrasé par cPanel). Pour voir l'erreur Python exacte : `python -c "import passenger_wsgi"` dans le venv.
 - `Plafond mensuel atteint` : la dépense Claude du mois a atteint `MONTHLY_BUDGET_EUR`. Plus aucune génération jusqu'au 1er du mois suivant, sauf si vous relevez le plafond dans `.env` (puis Restart).
 - Erreur SMTP `535` : mauvais mot de passe de la boîte `no-reply@`.
 - Les comptes X renvoient des erreurs : la passerelle Nitter est hors ligne. Changer `X_RSS_TEMPLATE` dans `.env` pour une autre instance (par exemple `https://nitter.privacydev.net/{handle}/rss`) ou désactiver ces sources dans l'interface.
