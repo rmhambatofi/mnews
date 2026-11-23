@@ -47,11 +47,13 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
     ("Journal du Net - Web & Tech", "rss", "https://www.journaldunet.com/web-tech/rss/", "fr", {}, True),
     # --- Agrégateurs ---
     ("Hacker News (IA)", "hackernews", "https://hn.algolia.com/", "en", {"min_points": 40}, True),
-    ("Reddit r/artificial", "reddit", "https://www.reddit.com/r/artificial/top.rss?t=day", "en", {}, True),
-    ("Reddit r/LocalLLaMA", "reddit", "https://www.reddit.com/r/LocalLLaMA/top.rss?t=day", "en", {}, True),
-    ("Reddit r/ClaudeAI", "reddit", "https://www.reddit.com/r/ClaudeAI/top.rss?t=day", "en", {}, True),
-    ("Reddit r/MachineLearning", "reddit", "https://www.reddit.com/r/MachineLearning/top.rss?t=day", "en", {}, True),
-    ("Reddit r/OpenAI", "reddit", "https://www.reddit.com/r/OpenAI/top.rss?t=day", "en", {}, True),
+    # --- Reddit : désactivé. Reddit a supprimé ses flux RSS le 13/11/2026 (404 sur toutes
+    #     les URL) et n'accepte plus de nouveaux accès à son API. Pas de remplacement.
+    ("Reddit r/artificial", "reddit", "https://www.reddit.com/r/artificial/top.rss?t=day", "en", {}, False),
+    ("Reddit r/LocalLLaMA", "reddit", "https://www.reddit.com/r/LocalLLaMA/top.rss?t=day", "en", {}, False),
+    ("Reddit r/ClaudeAI", "reddit", "https://www.reddit.com/r/ClaudeAI/top.rss?t=day", "en", {}, False),
+    ("Reddit r/MachineLearning", "reddit", "https://www.reddit.com/r/MachineLearning/top.rss?t=day", "en", {}, False),
+    ("Reddit r/OpenAI", "reddit", "https://www.reddit.com/r/OpenAI/top.rss?t=day", "en", {}, False),
     # --- GitHub ---
     ("GitHub trending (semaine)", "github_trending", "https://github.com/trending?since=weekly", "en", {}, True),
     ("GitHub nouveaux dépôts populaires", "github_search", "https://api.github.com/search/repositories", "en",
@@ -78,6 +80,23 @@ REPLACED_URLS = {
     "https://www.01net.com/feed/": "https://news.google.com/rss/search?q=site:01net.com&hl=fr&gl=FR&ceid=FR:fr",
 }
 
+# Sources mortes : seed_sources() les désactive si elles sont encore actives en base.
+RETIRED_SOURCES = {
+    "reddit": "Reddit a supprimé ses flux RSS le 13/11/2026, aucun remplacement possible",
+}
+
+
+def retire_sources() -> int:
+    """Désactive les sources dont le service a disparu (idempotent). Renvoie le nombre désactivé."""
+    retired = 0
+    with session_scope() as session:
+        for src in session.scalars(select(Source).where(Source.type.in_(list(RETIRED_SOURCES)))).all():
+            if src.enabled:
+                src.enabled = False
+                src.last_error = RETIRED_SOURCES[src.type]
+                retired += 1
+    return retired
+
 
 def seed_sources() -> int:
     """Insère les sources manquantes et met à jour les URL remplacées (idempotent).
@@ -99,4 +118,5 @@ def seed_sources() -> int:
             session.add(Source(name=name, type=type_, url=url, lang=lang, enabled=enabled,
                                config_json=json.dumps(cfg, ensure_ascii=False)))
             added += 1
+    retire_sources()
     return added

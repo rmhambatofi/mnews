@@ -1,6 +1,6 @@
 # mnews — agent de veille IA
 
-Agent qui collecte chaque jour l'actualité de l'intelligence artificielle (blogs officiels, médias, Hacker News, Reddit, GitHub, comptes X), demande à Claude de sélectionner et rédiger une newsletter en français, puis l'envoie par email à 9h (heure de Paris).
+Agent qui collecte chaque jour l'actualité de l'intelligence artificielle (blogs officiels, médias, Hacker News, GitHub, comptes X), demande à Claude de sélectionner et rédiger une newsletter en français, puis l'envoie par email à 9h (heure de Paris).
 
 ## Fonctionnement
 
