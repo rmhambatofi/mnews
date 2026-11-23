@@ -43,7 +43,7 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
     ("01net", "rss", "https://news.google.com/rss/search?q=site:01net.com&hl=fr&gl=FR&ceid=FR:fr", "fr", {}, True),
     ("Siècle Digital", "rss", "https://siecledigital.fr/feed/", "fr", {}, True),
     ("Blog du Modérateur", "rss", "https://www.blogdumoderateur.com/feed/", "fr", {}, True),
-    ("L'Usine Digitale", "rss", "https://www.usine-digitale.fr/rss", "fr", {}, True),
+    ("L'Usine Digitale", "rss", "https://news.google.com/rss/search?q=site:usine-digitale.fr&hl=fr&gl=FR&ceid=FR:fr", "fr", {}, True),
     ("Journal du Net - Web & Tech", "rss", "https://www.journaldunet.com/web-tech/rss/", "fr", {}, True),
     # --- Agrégateurs ---
     ("Hacker News (IA)", "hackernews", "https://hn.algolia.com/", "en", {"min_points": 40}, True),
@@ -73,11 +73,13 @@ SEED: list[tuple[str, str, str, str, dict, bool]] = [
 
 
 # Anciennes URL remplacées : seed_sources() met à jour les sources déjà en base.
-# VentureBeat (anti-robots Vercel) et 01net (Cloudflare bloque l'IP de l'hébergeur)
+# VentureBeat (anti-robots Vercel), 01net (Cloudflare bloque l'IP de l'hébergeur) et
+# L'Usine Digitale (Akamai renvoie 403 depuis le 24/11/2026)
 # passent par le flux Google News du site.
 REPLACED_URLS = {
     "https://venturebeat.com/category/ai/feed/": "https://news.google.com/rss/search?q=site:venturebeat.com&hl=en-US&gl=US&ceid=US:en",
     "https://www.01net.com/feed/": "https://news.google.com/rss/search?q=site:01net.com&hl=fr&gl=FR&ceid=FR:fr",
+    "https://www.usine-digitale.fr/rss": "https://news.google.com/rss/search?q=site:usine-digitale.fr&hl=fr&gl=FR&ceid=FR:fr",
 }
 
 # Sources mortes : seed_sources() les désactive si elles sont encore actives en base.
