@@ -1,6 +1,7 @@
 """Étape 2 : Claude choisit les sujets du jour parmi les candidats."""
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -18,6 +19,9 @@ log = logging.getLogger("mnews.select")
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 GITHUB_TYPES = ("github_trending", "github_search")
+
+# Nombre d'appels au maximum quand le modèle renvoie une sélection vide
+SELECT_ATTEMPTS = 2
 
 SELECTION_SCHEMA = {
     "type": "object",
@@ -187,11 +191,52 @@ def select_stories(candidates: list[Candidate], today_label: str,
         + (_format_candidates(repos, max_chars=300) or "(aucun)")
     )
 
-    result = call_json(system, user, SELECTION_SCHEMA, step="select", effort=settings.effort_select, max_tokens=8000)
     by_id = {c.id: c for c in candidates}
 
+    # Il arrive (rarement) que le modèle renvoie une sélection vide alors que les
+    # candidats sont bons : la même requête rejouée donne une sélection normale.
+    # Comme le cron ne passe qu'une fois par jour, on retente avant d'abandonner.
     stories: list[Story] = []
-    for s in result.data.get("stories", []):
+    picked_repos: list[tuple[Candidate, str]] = []
+    attempts: list[LLMResult] = []
+    for attempt in range(1, SELECT_ATTEMPTS + 1):
+        result = call_json(system, user, SELECTION_SCHEMA, step="select",
+                           effort=settings.effort_select, max_tokens=8000)
+        attempts.append(result)
+        stories, picked_repos = _parse_selection(result.data, by_id, max_stories, max_repos)
+        if stories or picked_repos:
+            break
+        log.warning(
+            "Sélection vide (essai %d/%d, %d tokens de sortie). Note de l'éditeur : %s | Réponse : %s",
+            attempt, SELECT_ATTEMPTS, result.output_tokens,
+            result.data.get("editor_note", "") or "(aucune)",
+            truncate(json.dumps(result.data, ensure_ascii=False), 1500),
+        )
+
+    # Coût et tokens de tous les essais, pour que la newsletter affiche le vrai total
+    llm = LLMResult(
+        data=result.data,
+        input_tokens=sum(a.input_tokens for a in attempts),
+        output_tokens=sum(a.output_tokens for a in attempts),
+        cost_usd=sum(a.cost_usd for a in attempts),
+        model=result.model,
+        request_id=result.request_id,
+    )
+
+    log.info("Sélection : %d sujets, %d dépôts sur %d candidats", len(stories), len(picked_repos), len(candidates))
+    return Selection(
+        stories=stories,
+        repos=picked_repos,
+        editor_note=result.data.get("editor_note", ""),
+        candidates_count=len(candidates),
+        llm=llm,
+    )
+
+
+def _parse_selection(data: dict, by_id: dict[int, Candidate], max_stories: int,
+                     max_repos: int) -> tuple[list[Story], list[tuple[Candidate, str]]]:
+    stories: list[Story] = []
+    for s in data.get("stories", []):
         items = [by_id[i] for i in s.get("item_ids", []) if i in by_id]
         if not items:
             continue
@@ -209,17 +254,8 @@ def select_stories(candidates: list[Candidate], today_label: str,
     stories = stories[:max_stories]
 
     picked_repos: list[tuple[Candidate, str]] = []
-    for r in result.data.get("repos", []):
+    for r in data.get("repos", []):
         c = by_id.get(r.get("item_id"))
         if c and c.source_type in GITHUB_TYPES:
             picked_repos.append((c, r.get("why", "")))
-    picked_repos = picked_repos[:max_repos]
-
-    log.info("Sélection : %d sujets, %d dépôts sur %d candidats", len(stories), len(picked_repos), len(candidates))
-    return Selection(
-        stories=stories,
-        repos=picked_repos,
-        editor_note=result.data.get("editor_note", ""),
-        candidates_count=len(candidates),
-        llm=result,
-    )
+    return stories, picked_repos[:max_repos]
